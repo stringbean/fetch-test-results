@@ -2,19 +2,27 @@ import { ProjectReport } from './model/ProjectReport';
 import { promises as fsPromises } from 'fs';
 import * as path from 'path';
 
-export async function loadProjectReports(
-  dir: string,
-  reportPrefix: string,
-): Promise<ProjectReport[]> {
-  const dirListing = await fsPromises.readdir(dir, { withFileTypes: true });
-  const reportFiles = dirListing
-    .filter((entry) => entry.isFile() && entry.name.startsWith(reportPrefix))
-    .map((entry) => entry.name);
+const REPORT_FILENAME = 'project-report.json';
 
-  return await Promise.all(reportFiles.map((name) => loadReport(dir, name)));
+export async function loadProjectReports(
+  baseDir: string,
+  artifactNames: string[],
+): Promise<ProjectReport[]> {
+  const reports: (ProjectReport | null)[] = await Promise.all(
+    artifactNames.map((artifactName) => loadReport(baseDir, artifactName)),
+  );
+
+  return reports.filter((report) => report !== null);
 }
 
-async function loadReport(dir: string, name: string): Promise<ProjectReport> {
-  const data = await fsPromises.readFile(path.join(dir, name));
-  return JSON.parse(data.toString());
+async function loadReport(baseDir: string, artifactName: string): Promise<ProjectReport | null> {
+  const reportPath = path.join(baseDir, artifactName, REPORT_FILENAME);
+  const stat = await fsPromises.stat(reportPath);
+
+  if (stat.isFile()) {
+    const data = await fsPromises.readFile(reportPath);
+    return JSON.parse(data.toString());
+  } else {
+    return null;
+  }
 }

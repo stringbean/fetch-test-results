@@ -4,6 +4,7 @@ import { promises as fsPromises } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as io from '@actions/io';
+import { loadProjectReports } from './ProjectReportLoader';
 
 async function run() {
   const targetDir = await createTargetDir(core.getInput('target-dir'));
@@ -13,13 +14,9 @@ async function run() {
 
   console.log('found matching artifacts', artifacts);
 
-  for (const artifact of artifacts) {
-    const reportPath = path.join(targetDir, artifact, 'project-report.json');
+  const projectReports = await loadProjectReports(targetDir, artifacts);
 
-    const stat = await fsPromises.stat(reportPath);
-
-    console.log(`found report in ${artifact}? ${stat.isFile()}`);
-  }
+  console.log('loaded reports', projectReports);
 }
 
 async function fetchArtifacts(targetDir: string, prefix: string): Promise<string[]> {

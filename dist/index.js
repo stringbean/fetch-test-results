@@ -8695,35 +8695,6 @@ module.exports = require("zlib");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__nccwpck_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__nccwpck_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -8744,18 +8715,43 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
+// ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_artifact__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2605);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7147);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(1017);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(2037);
-/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(7436);
-/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__nccwpck_require__.n(_actions_io__WEBPACK_IMPORTED_MODULE_5__);
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(2186);
+// EXTERNAL MODULE: ./node_modules/@actions/artifact/lib/artifact-client.js
+var artifact_client = __nccwpck_require__(2605);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(7147);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
+// EXTERNAL MODULE: external "os"
+var external_os_ = __nccwpck_require__(2037);
+// EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
+var io = __nccwpck_require__(7436);
+;// CONCATENATED MODULE: ./src/ProjectReportLoader.ts
+
+
+const REPORT_FILENAME = 'project-report.json';
+async function loadProjectReports(baseDir, artifactNames) {
+    const reports = await Promise.all(artifactNames.map((artifactName) => loadReport(baseDir, artifactName)));
+    return reports.filter((report) => report !== null);
+}
+async function loadReport(baseDir, artifactName) {
+    const reportPath = external_path_.join(baseDir, artifactName, REPORT_FILENAME);
+    const stat = await external_fs_.promises.stat(reportPath);
+    if (stat.isFile()) {
+        const data = await external_fs_.promises.readFile(reportPath);
+        return JSON.parse(data.toString());
+    }
+    else {
+        return null;
+    }
+}
+
+;// CONCATENATED MODULE: ./src/index.ts
+
 
 
 
@@ -8763,18 +8759,15 @@ __nccwpck_require__.r(__webpack_exports__);
 
 
 async function run() {
-    const targetDir = await createTargetDir(_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('target-dir'));
-    const artifactPrefix = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('artifact-prefix');
+    const targetDir = await createTargetDir(core.getInput('target-dir'));
+    const artifactPrefix = core.getInput('artifact-prefix');
     const artifacts = await fetchArtifacts(targetDir, artifactPrefix);
     console.log('found matching artifacts', artifacts);
-    for (const artifact of artifacts) {
-        const reportPath = path__WEBPACK_IMPORTED_MODULE_3__.join(targetDir, artifact, 'project-report.json');
-        const stat = await fs__WEBPACK_IMPORTED_MODULE_2__.promises.stat(reportPath);
-        console.log(`found report in ${artifact}? ${stat.isFile()}`);
-    }
+    const projectReports = await loadProjectReports(targetDir, artifacts);
+    console.log('loaded reports', projectReports);
 }
 async function fetchArtifacts(targetDir, prefix) {
-    const artifactClient = _actions_artifact__WEBPACK_IMPORTED_MODULE_1__/* .create */ .U();
+    const artifactClient = artifact_client/* create */.U();
     const responses = await artifactClient.downloadAllArtifacts(targetDir);
     return responses
         .map((response) => response.artifactName)
@@ -8782,17 +8775,17 @@ async function fetchArtifacts(targetDir, prefix) {
 }
 async function createTargetDir(overrideDir) {
     if (overrideDir) {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_5__.mkdirP(overrideDir);
+        await io.mkdirP(overrideDir);
         return overrideDir;
     }
     else {
-        return await fs__WEBPACK_IMPORTED_MODULE_2__.promises.mkdtemp(path__WEBPACK_IMPORTED_MODULE_3__.join(os__WEBPACK_IMPORTED_MODULE_4__.tmpdir(), 'fetch-test-results-'));
+        return await external_fs_.promises.mkdtemp(external_path_.join(external_os_.tmpdir(), 'fetch-test-results-'));
     }
 }
 run().catch((error) => {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.error('Unexpected error while processing JUnit results');
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(error);
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error);
+    core.error('Unexpected error while processing JUnit results');
+    core.debug(error);
+    core.setFailed(error);
 });
 
 })();
