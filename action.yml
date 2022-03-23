@@ -1,0 +1,15 @@
+name: Fetch Test Results
+description: Fetch previously stored project test results
+author: Michael Stringer
+
+inputs:
+  artifact-pattern:
+    description: Glob pattern to match uploaded artifact names
+    required: false
+    default: 'test-report-*'
+  target-dir:
+    required: false
+
+runs:
+  using: node16
+  main: dist/index.js

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "rootDir": "src",
+    "moduleResolution": "node"
+  },
+  "include": [
+    "src"
+  ]
+}
