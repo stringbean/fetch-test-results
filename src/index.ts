@@ -7,19 +7,20 @@ import * as io from '@actions/io';
 
 async function run() {
   const targetDir = await createTargetDir(core.getInput('target-dir'));
-  await fetchArtifacts(targetDir);
+  const artifactPrefix = core.getInput('artifact-prefix');
+
+  const artifacts = await fetchArtifacts(targetDir, artifactPrefix);
+
+  console.log('found matching artifacts', artifacts);
 }
 
-async function fetchArtifacts(targetDir: string): Promise<string[]> {
+async function fetchArtifacts(targetDir: string, prefix: string): Promise<string[]> {
   const artifactClient = artifact.create();
 
-  const artifacts = await artifactClient.downloadAllArtifacts(targetDir);
-
-  const names = artifacts.map((a) => a.artifactName);
-
-  console.log('found artifacts?', names);
-
-  return [];
+  const responses = await artifactClient.downloadAllArtifacts(targetDir);
+  return responses
+    .map((response) => response.artifactName)
+    .filter((name) => name.startsWith(prefix));
 }
 
 async function createTargetDir(overrideDir: string): Promise<string> {

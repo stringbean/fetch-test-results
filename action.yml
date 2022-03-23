@@ -3,10 +3,10 @@ description: Fetch previously stored project test results
 author: Michael Stringer
 
 inputs:
-  artifact-pattern:
-    description: Glob pattern to match uploaded artifact names
+  artifact-prefix:
+    description: Filename prefix for project report artifacts
     required: false
-    default: 'test-report-*'
+    default: 'test-report-'
   target-dir:
     required: false
 

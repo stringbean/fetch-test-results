@@ -8764,14 +8764,16 @@ __nccwpck_require__.r(__webpack_exports__);
 
 async function run() {
     const targetDir = await createTargetDir(_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('target-dir'));
-    await fetchArtifacts(targetDir);
+    const artifactPrefix = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('artifact-prefix');
+    const artifacts = await fetchArtifacts(targetDir, artifactPrefix);
+    console.log('found matching artifacts', artifacts);
 }
-async function fetchArtifacts(targetDir) {
+async function fetchArtifacts(targetDir, prefix) {
     const artifactClient = _actions_artifact__WEBPACK_IMPORTED_MODULE_1__/* .create */ .U();
-    const artifacts = await artifactClient.downloadAllArtifacts(targetDir);
-    const names = artifacts.map((a) => a.artifactName);
-    console.log('found artifacts?', names);
-    return [];
+    const responses = await artifactClient.downloadAllArtifacts(targetDir);
+    return responses
+        .map((response) => response.artifactName)
+        .filter((name) => name.startsWith(prefix));
 }
 async function createTargetDir(overrideDir) {
     if (overrideDir) {
