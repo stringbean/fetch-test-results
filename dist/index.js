@@ -8767,6 +8767,11 @@ async function run() {
     const artifactPrefix = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('artifact-prefix');
     const artifacts = await fetchArtifacts(targetDir, artifactPrefix);
     console.log('found matching artifacts', artifacts);
+    for (const artifact of artifacts) {
+        const reportPath = path__WEBPACK_IMPORTED_MODULE_3__.join(targetDir, artifact, 'project-report.json');
+        const stat = await fs__WEBPACK_IMPORTED_MODULE_2__.promises.stat(reportPath);
+        console.log(`found report in ${artifact}? ${stat.isFile()}`);
+    }
 }
 async function fetchArtifacts(targetDir, prefix) {
     const artifactClient = _actions_artifact__WEBPACK_IMPORTED_MODULE_1__/* .create */ .U();

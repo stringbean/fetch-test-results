@@ -12,6 +12,14 @@ async function run() {
   const artifacts = await fetchArtifacts(targetDir, artifactPrefix);
 
   console.log('found matching artifacts', artifacts);
+
+  for (const artifact of artifacts) {
+    const reportPath = path.join(targetDir, artifact, 'project-report.json');
+
+    const stat = await fsPromises.stat(reportPath);
+
+    console.log(`found report in ${artifact}? ${stat.isFile()}`);
+  }
 }
 
 async function fetchArtifacts(targetDir: string, prefix: string): Promise<string[]> {
